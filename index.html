@@ -3,198 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billionaire Game</title>
+    <title>Haunted Map - 666 Black Roses Street</title>
+    
+    <!-- Leaflet.js for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Creepster&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* Fullscreen Background Image */
-        .background-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-            z-index: -2; /* Ensures it's always in the background */
-        }
-
+        /* General Styles */
         body {
+            margin: 0;
+            overflow: hidden;
             font-family: 'Creepster', cursive;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            position: relative;
             color: red;
+            text-align: center;
+            background: url('https://i.pinimg.com/originals/b5/66/af/b566af8bab8557bafb92a77717ab70f7.gif') no-repeat center center fixed;
+            background-size: cover;
         }
 
-        /* Loading Screen */
-        .loading-screen {
-            position: absolute;
+        canvas {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 15;
+            z-index: -1;
         }
 
-        .loading-text {
+        h1 {
             font-size: 40px;
-            font-weight: bold;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        .progress-container {
-            width: 220px;
-            height: 30px;
-            border: 2px solid red;
-            background: black;
+            text-shadow: 0 0 10px red;
             margin-top: 20px;
         }
 
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: white;
-            transition: width 2s linear;
-        }
-
-        /* Main Content */
-        .main-content {
-            display: none;
-            text-align: center;
-            position: relative;
-            z-index: 3;
-        }
-
-        /* Box Container */
-        .box-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .title {
-            font-size: 50px;
-            font-weight: bold;
-            color: red;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        /* Box with Background Image */
-        .box {
-            background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUIWfzcqtfw1gH_kgGRww5bUPqMEdxdSgLWKjwINm2vQGufhm9p63LKpE&s=10') center/cover no-repeat;
-            padding: 30px;
-            border-radius: 10px;
-            text-align: center;
-            width: 80%;
-            max-width: 500px;
+        /* Map Container with Thunder Background */
+        #map {
+            height: 500px;
+            width: 90%;
+            margin: auto;
+            border: 5px solid red;
             box-shadow: 0 0 20px red;
-            border: 2px solid red;
+            position: relative;
+            background: url('https://i.pinimg.com/originals/b5/66/af/b566af8bab8557bafb92a77717ab70f7.gif') no-repeat center center fixed;
+            background-size: cover;
         }
 
-        h1, p {
-            color: red;
-            background: rgba(0, 0, 0, 0.6); /* Makes text more readable */
-            padding: 5px;
-            border-radius: 5px;
-            display: inline-block;
-        }
-
-        .btn {
-            background-color: red;
-            color: black;
-            padding: 15px 30px;
-            margin: 10px;
-            border: 2px solid red;
-            border-radius: 5px;
-            font-size: 18px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn:hover {
-            background-color: darkred;
-        }
-
-        .link a {
-            color: red;
-            text-decoration: none;
+        .address {
+            margin-top: 20px;
+            font-size: 20px;
             font-weight: bold;
+            text-shadow: 0 0 10px red;
+        }
+
+        /* Popup Box */
+        .popup-box {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 350px;
+            padding: 20px;
+            background-color: black;
+            border: 4px solid red;
+            box-shadow: 0 0 15px red;
+            text-align: center;
+            font-size: 18px;
+            color: red;
+            display: none;
+            z-index: 10;
+        }
+
+        .popup-box .close-btn {
+            background: #330000;
+            color: red;
+            padding: 10px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .popup-box .close-btn:hover {
+            background: red;
+            color: black;
         }
     </style>
 </head>
 <body>
-    <!-- Fullscreen Background Image -->
-    <img class="background-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUIWfzcqtfw1gH_kgGRww5bUPqMEdxdSgLWKjwINm2vQGufhm9p63LKpE&s=10" alt="Bloody Blinking Eye">
 
-    <div class="loading-screen">
-        <div class="loading-text" id="loading-text">LOADING...</div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-        <div class="loading-text" id="loading-status">0%</div>
+    <h1>Haunted Location: 666 Black Roses Street</h1>
+
+    <!-- Warning Box -->
+    <div id="infoBox" class="popup-box">
+        <h2>WARNING!</h2>
+        <p>You have entered 666 Black Roses Street...</p>
+        <p>There's no turning back now...</p>
+        <button class="close-btn" onclick="closePopup()">Close</button>
     </div>
 
-    <div class="main-content">
-        <div class="box-container">
-            <div class="title">SAMPLE</div>
-            <div class="box">
-                <h1>BE A BILLIONAIRE! IN JUST <br> PLAYING THE GAME?</h1>
-                <p>ARE YOU READY TO PLAY?</p>
-                <button class="btn" onclick="startGame()">YES</button>
-                <button class="btn">NO</button>
-                <p class="link">Click the link to claim: <a href="#">https://us.com/2billionpesos...</a></p>
-            </div>
-        </div>
-    </div>
+    <!-- Map Container -->
+    <div id="map"></div>
+    
+    <div class="address">Address: 666 Black Roses Street</div>
 
     <script>
-        function startGame() {
-            alert("Game Starting...");
+        // Initialize Leaflet Map
+        var map = L.map('map').setView([38.6200, -90.2100], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Custom red dot marker
+        var redMarker = L.icon({
+            iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Basic_red_dot.png',
+            iconSize: [20, 20]
+        });
+
+        // Add red marker
+        var marker = L.marker([38.6200, -90.2100], {icon: redMarker}).addTo(map);
+        marker.bindPopup("Click me if you dare...");
+
+        // Open warning popup when clicking marker
+        marker.on('click', function () {
+            document.getElementById('infoBox').style.display = "block";
+        });
+
+        // Close the popup
+        function closePopup() {
+            document.getElementById('infoBox').style.display = "none";
         }
-
-        let progress = 0;
-        let progressBar = document.getElementById("progress-bar");
-        let loadingText = document.getElementById("loading-text");
-        let loadingStatus = document.getElementById("loading-status");
-
-        function updateProgress() {
-            if (progress < 100) {
-                progress += 1;
-                progressBar.style.width = progress + "%";
-                loadingStatus.innerText = progress + "%";
-                setTimeout(updateProgress, 20);
-            } else {
-                loadingText.innerText = "WELCOME TO";
-                loadingStatus.innerText = "Successful Loading";
-
-                setTimeout(() => {
-                    document.querySelector(".loading-screen").style.display = "none";
-                    document.querySelector(".main-content").style.display = "block";
-                }, 1000);
-            }
-        }
-
-        updateProgress();
     </script>
 </body>
 </html>
